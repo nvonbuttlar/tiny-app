@@ -9,10 +9,12 @@
   <ul>
     <% for (var shortURL in urls) { %>
     <li><%= shortURL %> - <%= urls[shortURL] %> </li>
+    <form method="POST" action="/urls/<%=shortURL%>/delete"><button type="submit"> Delete </button></form>
     <% }; %>
   </ul>
 
-  <a href='#'> New link for shortening URLs </a>
+
+  <a href="http://localhost:8080/urls/new"> New link for shortening URLs </a>
 
 </body>
 </html>
