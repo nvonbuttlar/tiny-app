@@ -1,24 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-  <title>TinyApp</title>
-
-</head>
+<head><% include ./partials/_head %></head>
 
 <body>
-
-
-  <h1> Tiny App </h1>
+  <header><% include ./partials/_header %></header>
 
 
   <ul>
-    <% for (var urlDatabase in urls) { %>
-    <li><%= urls[urlDatabase] %> </li>
+    <% for (var shortURL in urls) { %>
+    <li><%= shortURL %> - <%= urls[shortURL] %> </li>
     <% }; %>
   </ul>
 
-  <a href='#'> Link for shortening new URL </a>
+  <a href='#'> New link for shortening URLs </a>
 
 </body>
 </html>
