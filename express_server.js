@@ -40,14 +40,22 @@ app.get("/hello", (req, res) => {
 });
 
 
-// Renders HomePage with long and short urls
+// Renders page with list of urls
 app.get("/urls", (req, res) => {
   let templateVars = {urls: urlDatabase}
-  res.render("urls_index", templateVars) //EJS knows to look to views folder for template files.ejs, therefor we can omit filename and pathway
+  res.render("urls_index", templateVars); //EJS knows to look to views folder for template files.ejs, therefor we can omit filename and pathway
+});
+
+// Delete function
+app.post("/urls/:id/delete", (req, res) => {
+
+  delete urlDatabase[req.params.id];
+
+  res.redirect("/urls");
 });
 
 
-// Renders page with form
+// Renders new URL page
 app.get("/urls/new", (req, res) => {
 
   res.render("urls_new");
@@ -64,36 +72,36 @@ app.post("/urls", (req, res) => {
 
 });
 
+//Redirects page to the longURL webpagewhen short URL is passed to Search bar
+app.get("/u/:shortURL", (req, res) => {
+  let shortURL = req.params.shortURL;
+  let longURL = urlDatabase[shortURL];
 
+  res.redirect(longURL);
+});
+
+
+//Renders Short URLs: page
 app.get("/urls/:id", (req, res) => {
   let templateVars = {
     shortURL: req.params.id,
     longURL: urlDatabase[req.params.id]
   };
-  res.render("urls_show", templateVars)
+  res.render("urls_show", templateVars);
 });
 
-app.get("/u/:shortURL", (req, res) => {
-  // let longURL = ...
-  let shortURL = req.params.shortURL;
-  let longURL = urlDatabase[shortURL];
 
-  res.redirect(longURL);
+app.post("/urls/:id", (req, res) => {
 
-});
-
-app.post("/urls/:id/delete", (req, res) => {
-  console.log("You tried to delete a short url");
-  // let templateVars = {
-  //   shortURL: req.params.id,
-  //   longURL: urlDatabase[req.params.id]
-  // };
-
-  delete urlDatabase[req.params.id];
-  //delete templateVars[longURL];
+  urlDatabase[req.params.id] = req.body.longURL;
 
   res.redirect("/urls");
 });
+
+
+
+
+
 
 
 

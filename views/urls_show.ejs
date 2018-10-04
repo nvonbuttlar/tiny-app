@@ -4,10 +4,18 @@
 
 <body>
   <header><% include ./partials/_header %></header>
+</body>
 
-  <ul>
-    <%= shortURL %> - <%= longURL %>
-  </ul>
+  <h1> Short URLs: </h1>
+
+ <form action="/urls/<%= shortURL %>" method="POST" style="margin:150px;">
+
+      <input name="longURL" type="text" placeholder="Update your URL here" style="width: 300px">
+      <input type="submit" value="Update">
+
+  </form>
+
+
 
 </body>
 </html>
