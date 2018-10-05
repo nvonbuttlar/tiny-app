@@ -8,6 +8,22 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
 app.set("view engine", "ejs"); // this tells the Express app to use EJS ad its templating engine
 
+
+// Data storage for user info
+const users = {
+  "userRandomID": {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur"
+  },
+  "user2RandomID": {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk"
+  }
+}
+
+
 // we use this database to keep track of all the URLs  and their shortened forms
 let urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -16,6 +32,7 @@ let urlDatabase = {
 
 // Used function from StackOverflow
 let generateRandomString = function() {
+
   var randomURL = "";
   var bank      = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
 
@@ -25,13 +42,10 @@ let generateRandomString = function() {
   return randomURL;
 }
 
-
-// ROUTE METHODS USING GET
+// ***ROUTE METHODS USING GET***
 
 // Renders page with list of urls
 app.get("/urls", (req, res) => {
-  console.log(req.cookies);
-
 
   let templateVars = {
     urls: urlDatabase,
@@ -44,7 +58,6 @@ app.get("/urls", (req, res) => {
 app.post("/urls/:id/delete", (req, res) => {
 
   delete urlDatabase[req.params.id];
-
   res.redirect("/urls");
 });
 
@@ -56,31 +69,31 @@ app.get("/urls/new", (req, res) => {
     urls: urlDatabase,
     username: req.cookies.username
   };
-
   res.render("urls_new", templateVars);
 });
 
 // Redirects back to Homepage after submission
 app.post("/urls", (req, res) => {
+
   let longURL  = req.body.longURL;
   let shortURL = generateRandomString();
   urlDatabase[shortURL] = longURL;
-
   res.redirect("/urls");
 
 });
 
-//Redirects page to the longURL webpagewhen short URL is passed to Search bar
+// Redirects page to the longURL webpagewhen short URL is passed to Search bar
 app.get("/u/:shortURL", (req, res) => {
+
   let shortURL = req.params.shortURL;
   let longURL  = urlDatabase[shortURL];
-
   res.redirect(longURL);
 });
 
 
-//Renders Short URLs: page
+// Renders Short URLs: page
 app.get("/urls/:id", (req, res) => {
+
   let templateVars = {
     shortURL: req.params.id,
     longURL: urlDatabase[req.params.id],
@@ -91,24 +104,55 @@ app.get("/urls/:id", (req, res) => {
 
 
 app.post("/urls/:id", (req, res) => {
-  urlDatabase[req.params.id] = req.body.longURL;
 
+  urlDatabase[req.params.id] = req.body.longURL;
   res.redirect("/urls");
 });
 
-//Post to login -- cookie will remain when navigating pages
+// Post to login -- cookie will remain when navigating pages
 app.post("/login", (req, res) => {
+
   res.cookie("username", req.body.username);
   res.redirect("/urls");
 });
 
-//Post to logout -- clear cookies and return to login (/urls)
+// Post to logout -- clear cookies and return to login (/urls)
 app.post("/logout", (req, res) => {
 
   res.clearCookie("username", req.cookies.username);
   res.redirect("/urls");
-})
+});
 
+// Registration page
+app.get("/register", (req, res) => {
+
+  let templateVars = {
+    username: req.cookies.username
+  }
+
+  res.render("register", templateVars);
+});
+
+app.post("/register", (req, res) => {
+
+  let newID       = generateRandomString();
+  let newEmail    = req.body.email;
+  let newPassword = req.body.password;
+
+
+// This appends the global object users with a newUser
+  users[newID] = {
+    id: newID,
+    email: newEmail,
+    password: newPassword,
+  };
+
+  console.log(users);
+
+  res.cookie("user_id", newID);
+
+  res.redirect("/urls");
+});
 
 
 
