@@ -91,6 +91,7 @@ app.post("/urls", (req, res) => {
 });
 
 // Redirects page to the longURL webpagewhen short URL is passed to Search bar
+// need http:// in order for new URL's to redirect properly *
 app.get("/u/:shortURL", (req, res) => {
 
   let shortURL = req.params.shortURL;
