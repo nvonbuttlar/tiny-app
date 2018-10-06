@@ -1,7 +1,7 @@
 
 const express      = require("express"); // this imports the express module
 const app          = express();
-const PORT         = 8080; // default port 8080
+const PORT         = 8080; // default port 8000
 const bodyParser   = require("body-parser");
 const cookieParser = require('cookie-parser')
 app.use(bodyParser.urlencoded({extended: true}));
@@ -42,14 +42,17 @@ let generateRandomString = function() {
   return randomURL;
 }
 
+
 // ***ROUTE METHODS USING GET***
 
 // Renders page with list of urls
 app.get("/urls", (req, res) => {
 
+
   let templateVars = {
     urls: urlDatabase,
-    username: req.cookies.username
+    user_id: users[req.cookies["user_id"]]
+
   };
   res.render("urls_index", templateVars); //EJS knows to look to views folder for template files.ejs, therefor we can omit filename and pathway
 });
@@ -67,7 +70,7 @@ app.get("/urls/new", (req, res) => {
 
   let templateVars = {
     urls: urlDatabase,
-    username: req.cookies.username
+    user_id: users[req.cookies["user_id"]]
   };
   res.render("urls_new", templateVars);
 });
@@ -97,7 +100,7 @@ app.get("/urls/:id", (req, res) => {
   let templateVars = {
     shortURL: req.params.id,
     longURL: urlDatabase[req.params.id],
-    username: req.cookies.username
+    user_id: users[req.cookies["user_id"]]
   };
   res.render("urls_show", templateVars);
 });
@@ -127,7 +130,7 @@ app.post("/logout", (req, res) => {
 app.get("/register", (req, res) => {
 
   let templateVars = {
-    username: req.cookies.username
+    user_id: users[req.cookies["user_id"]]
   }
 
   res.render("register", templateVars);
@@ -139,7 +142,19 @@ app.post("/register", (req, res) => {
   let newEmail    = req.body.email;
   let newPassword = req.body.password;
 
+// Sends error for unfilled email/password fields
+  if (!newEmail || !newPassword) {
+    res.status(400).send('Fill out the fields Dummy!');
+    return;
+  }
 
+// Checks for existing users, will send 400 if match
+  for (var userID in users) {
+    if (newEmail === users[userID].email) {
+      res.status(400).send('This e-mail is already in use, please choose another.');
+      return;
+    }
+  }
 // This appends the global object users with a newUser
   users[newID] = {
     id: newID,
@@ -147,13 +162,16 @@ app.post("/register", (req, res) => {
     password: newPassword,
   };
 
-  console.log(users);
-
   res.cookie("user_id", newID);
-
   res.redirect("/urls");
 });
 
+
+//Renders login page
+app.get("/login", (req, res) => {
+
+  res.render("login");
+});
 
 
 
