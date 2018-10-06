@@ -31,15 +31,37 @@ const users = {
 
 // we use this database to keep track of all the URLs  and their shortened forms
 let urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
-};
+
+  "b2xVn2": {
+    shortURL: "b2xVn2",
+    longURL: "http://www.lighthouselabs.ca",
+    userID: "321"
+  },
+
+  "9sm5xK": {
+    shortURL: "9sm5xK",
+    longURL: "http://www.google.com",
+    userID: "user2RandomID"
+  }
+
+}
+
+function getsUserUrls(id){
+  let newObject = {};
+  for (let keys in urlDatabase) {
+    let currentUser = urlDatabase[keys].userID
+    if (currentUser && currentUser === id) {
+      newObject[keys] = urlDatabase[keys];
+    }
+  }
+  return newObject;
+}
 
 // Used function from StackOverflow
 let generateRandomString = function() {
 
-  var randomURL = "";
-  var bank      = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+  let randomURL   = "";
+  const bank      = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
 
   for (var i = 0; i < 5; i++)
     randomURL += bank.charAt(Math.floor(Math.random() * bank.length));
@@ -50,15 +72,17 @@ let generateRandomString = function() {
 
 // ***ROUTE METHODS USING GET***
 
-// Renders page with list of urls
+// Renders index page with list of urls
 app.get("/urls", (req, res) => {
-
 
   let templateVars = {
     urls: urlDatabase,
     user_id: users[req.cookies["user_id"]]
+  }
 
-  };
+  getsUserUrls(users[req.cookies["user_id"]]);
+
+
   res.render("urls_index", templateVars); //EJS knows to look to views folder for template files.ejs, therefor we can omit filename and pathway
 });
 
@@ -77,7 +101,13 @@ app.get("/urls/new", (req, res) => {
     urls: urlDatabase,
     user_id: users[req.cookies["user_id"]]
   };
-  res.render("urls_new", templateVars);
+
+  if (users[req.cookies["user_id"]]) {
+    res.render("urls_new", templateVars);
+  } else {
+    res.redirect("/login");
+  }
+
 });
 
 // Redirects back to Homepage after submission
