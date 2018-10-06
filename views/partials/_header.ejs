@@ -1,20 +1,19 @@
-<font size="10">Tiny App.</font></header>
+<font size="10">Tiny App.</font>
 <br>
-<br>
-<a href="/register">Register</a>
+<% if (!user_id) { %>
+<a href="/register">Register</a> |
 <a href="/login">Login</a>
-
-
-
-
-
-
-
-
-<!--  POTENTIAL LOG OUT BUTTON -->
-<!-- <% } else { %>
+<% } else { %>
 <h4> <%= user_id["email"] %> </h4>
 <form method="POST" action="/logout">
   <button type="submit"> Logout </button>
 </form>
-<% } %> -->
+<% } %>
+
+
+
+
+
+
+
+

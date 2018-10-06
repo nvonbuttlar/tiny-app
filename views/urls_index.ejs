@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head><% include ./partials/_head %></head>
+  <% include ./partials/_head %>
 
-  <body>
-
-
+  <body  style="font-size:20px; padding:50px;">
+    <% include ./partials/_header %>
   <ul>
     <% for (var shortURL in urls) { %>
     <li><%= shortURL %> - <%= urls[shortURL] %> </li>
@@ -12,11 +11,11 @@
       <button><a href="/urls/<%=shortURL%>">Edit</a></button>
       <button type="submit"> Delete </button>
     </form>
-    <% }; %>
+    <% } %>
   </ul>
 
 
-  <button><a href="/urls/new"> Add a new URL </a></button>
+  <a href="/urls/new"> Add a new URL </a>
 
 </body>
 </html>

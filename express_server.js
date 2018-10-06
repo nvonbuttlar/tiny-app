@@ -20,6 +20,11 @@ const users = {
     id: "user2RandomID",
     email: "user2@example.com",
     password: "dishwasher-funk"
+  },
+  "321": {
+    id: "321",
+    email: "nick@gmail.com",
+    password: "123"
   }
 }
 
@@ -81,8 +86,8 @@ app.post("/urls", (req, res) => {
   let longURL  = req.body.longURL;
   let shortURL = generateRandomString();
   urlDatabase[shortURL] = longURL;
-  res.redirect("/urls");
 
+  res.redirect("/urls");
 });
 
 // Redirects page to the longURL webpagewhen short URL is passed to Search bar
@@ -112,17 +117,41 @@ app.post("/urls/:id", (req, res) => {
   res.redirect("/urls");
 });
 
-// Post to login -- cookie will remain when navigating pages
+//Renders login page
+app.get("/login", (req, res) => {
+
+  res.render("login");
+});
+
+//Function to check if user email and password matches
+function authenticateUser(email, password){
+  for (var userID in users) {
+    if(users[userID].email === email && users[userID].password === password){
+      return users[userID];
+    }
+  }
+}
+
 app.post("/login", (req, res) => {
 
-  res.cookie("username", req.body.username);
-  res.redirect("/urls");
+  let email    = req.body.email;
+  let password = req.body.password;
+  let result   = authenticateUser(email,password)
+
+  if(result){
+    res.cookie("user_id", result.id);
+    res.redirect("/urls");
+  } else{
+    res.status(403).send("Username or password did not match")
+  }
+
 });
+
 
 // Post to logout -- clear cookies and return to login (/urls)
 app.post("/logout", (req, res) => {
 
-  res.clearCookie("username", req.cookies.username);
+  res.clearCookie("user_id");
   res.redirect("/urls");
 });
 
@@ -167,14 +196,12 @@ app.post("/register", (req, res) => {
 });
 
 
-//Renders login page
-app.get("/login", (req, res) => {
 
-  res.render("login");
-});
 
 
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
+
+
