@@ -1,15 +1,22 @@
 
-const PORT         = 8080; // default port 8000
-const express      = require("express"); // this imports the express module
-const app          = express();
-const bodyParser   = require("body-parser");
-const cookieParser = require('cookie-parser');
-const bcrypt       = require('bcrypt');
+const PORT          = 8080; // default port 8000
+const express       = require("express"); // this imports the express module
+const app           = express();
+const bodyParser    = require("body-parser");
+// const cookieParser  = require('cookie-parser');
+const cookieSession = require('cookie-session');
+const bcrypt        = require('bcrypt');
+
 
 app.use(bodyParser.urlencoded({extended: true}));
-app.use(cookieParser());
-app.set("view engine", "ejs"); // this tells the Express app to use EJS ad its templating engine
+app.set("view engine", "ejs"); // this tells the Express app to use EJS as its templating engine
+app.use(cookieSession({
+  name: 'session',
+  keys: ['key1', 'key2'],
 
+  // Cookie Options
+  maxAge: 24 * 60 * 60 * 1000 // 24 hours
+}));
 
 // Data storage for user info
 const users = {
@@ -32,13 +39,13 @@ const users = {
 
 
 
-// we use this database to keep track of all the URLs  and their shortened forms
+// We use this database to keep track of all the URLs  and their shortened forms
 let urlDatabase = {
 
   "b2xVn2": {
     shortURL: "b2xVn2",
     longURL: "http://www.lighthouselabs.ca",
-    userID: "321"
+    userID: "userRandomID"
   },
 
   "9sm5xK": {
@@ -81,12 +88,12 @@ let generateRandomString = function() {
 app.get("/urls", (req, res) => {
 
   let authenticatedUser;
-  if(req.cookies["user_id"]){
-    authenticatedUser = getsUserUrls(users[req.cookies["user_id"]].id);
+  if(req.session["user_id"]){
+    authenticatedUser = getsUserUrls(users[req.session["user_id"]].id);
 
     let templateVars = {
       urls: authenticatedUser,
-      user_id: users[req.cookies["user_id"]]
+      user_id: users[req.session["user_id"]]
     }
 
     res.render("urls_index", templateVars);
@@ -94,7 +101,7 @@ app.get("/urls", (req, res) => {
     res.redirect('/login');
   }
 
- //EJS knows to look to views folder for template files.ejs, therefor we can omit filename and pathway
+ //EJS knows to look to views folder for template files.ejs, therefore we can omit filename and pathway
 });
 
 // Delete function
@@ -110,10 +117,10 @@ app.get("/urls/new", (req, res) => {
 
   let templateVars = {
     urls: urlDatabase,
-    user_id: users[req.cookies["user_id"]].id
+    user_id: users[req.session["user_id"]].id
   };
 
-  if (users[req.cookies["user_id"]]) {
+  if (users[req.session["user_id"]]) {
     res.render("urls_new", templateVars);
   } else {
     res.redirect("/login");
@@ -123,7 +130,6 @@ app.get("/urls/new", (req, res) => {
 
 // Post request from /urls/new
 app.post("/urls", (req, res) => {
-//let myIDS = users[req.cookies["user_id"]];
 
   let longURL  = req.body.longURL;
   let shortUrl = generateRandomString();
@@ -131,7 +137,7 @@ app.post("/urls", (req, res) => {
   urlDatabase[shortUrl] = {
     shortURL : shortUrl,
     longURL : longURL,
-    userID : users[req.cookies["user_id"]].id
+    userID : users[req.session["user_id"]].id
   };
 
   res.redirect("/urls");
@@ -152,7 +158,7 @@ app.get("/urls/:id", (req, res) => {
   let templateVars = {
     shortURL: req.params.id,
     longURL: urlDatabase[req.params.id],
-    user_id: users[req.cookies["user_id"]]
+    user_id: users[req.session["user_id"]]
   };
   res.render("urls_show", templateVars);
 });
@@ -184,13 +190,13 @@ app.post("/login", (req, res) => {
   let email    = req.body.email;
   let password = req.body.password;
   let result   = authenticateUser(email,password)
-
   if(result){
-    res.cookie("user_id", result.id);
+    req.session.user_id = result.id;
     res.redirect("/urls");
   } else{
     res.status(403).send("Username or password did not match")
   }
+
 
 });
 
@@ -198,7 +204,7 @@ app.post("/login", (req, res) => {
 // Post to logout -- clear cookies and return to login (/urls)
 app.post("/logout", (req, res) => {
 
-  res.clearCookie("user_id");
+  req.session = null;
   res.redirect("/urls");
 });
 
@@ -206,7 +212,7 @@ app.post("/logout", (req, res) => {
 app.get("/register", (req, res) => {
 
   let templateVars = {
-    user_id: users[req.cookies["user_id"]]
+    user_id: users[req.session["user_id"]]
   }
 
   res.render("register", templateVars);
@@ -239,7 +245,8 @@ app.post("/register", (req, res) => {
     email: newEmail,
     password: hashedPassword,
   };
-  res.cookie("user_id", newID);
+
+  req.session.user_id = newID;
   res.redirect("/urls");
 });
 
