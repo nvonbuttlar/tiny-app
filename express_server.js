@@ -47,14 +47,15 @@ let urlDatabase = {
 }
 
 function getsUserUrls(id){
-  let newObject = {};
+
+  let newArray = [];
+  let userURLs = {};
   for (let keys in urlDatabase) {
-    let currentUser = urlDatabase[keys].userID
-    if (currentUser && currentUser === id) {
-      newObject[keys] = urlDatabase[keys];
+    if (id === urlDatabase[keys].userID) {
+        userURLs[keys] = urlDatabase[keys].longURL;
+      }
     }
-  }
-  return newObject;
+    return userURLs;
 }
 
 // Used function from StackOverflow
@@ -75,15 +76,20 @@ let generateRandomString = function() {
 // Renders index page with list of urls
 app.get("/urls", (req, res) => {
 
-  let templateVars = {
-    urls: urlDatabase,
-    user_id: users[req.cookies["user_id"]]
+  let authenticatedUser;
+  if(req.cookies["user_id"]){
+    authenticatedUser = getsUserUrls(users[req.cookies["user_id"]].id);
+     console.log("URLS for that user ",authenticatedUser);
+    let templateVars = {
+      urls: authenticatedUser,
+      user_id: users[req.cookies["user_id"]]
+    }
+    res.render("urls_index", templateVars);
+  } else {
+    res.redirect('/login');
   }
 
-  getsUserUrls(users[req.cookies["user_id"]]);
-
-
-  res.render("urls_index", templateVars); //EJS knows to look to views folder for template files.ejs, therefor we can omit filename and pathway
+ //EJS knows to look to views folder for template files.ejs, therefor we can omit filename and pathway
 });
 
 // Delete function
@@ -99,7 +105,7 @@ app.get("/urls/new", (req, res) => {
 
   let templateVars = {
     urls: urlDatabase,
-    user_id: users[req.cookies["user_id"]]
+    user_id: users[req.cookies["user_id"]].id
   };
 
   if (users[req.cookies["user_id"]]) {
@@ -110,13 +116,20 @@ app.get("/urls/new", (req, res) => {
 
 });
 
-// Redirects back to Homepage after submission
+// Post request from /urls/new
 app.post("/urls", (req, res) => {
+//let myIDS = users[req.cookies["user_id"]];
+
 
   let longURL  = req.body.longURL;
-  let shortURL = generateRandomString();
-  urlDatabase[shortURL] = longURL;
-
+  let shortUrl = generateRandomString();
+  urlDatabase[shortUrl] = {
+    shortURL : shortUrl,
+    longURL : longURL,
+    userID : users[req.cookies["user_id"]].id
+  };
+  console.log("After creating new URL");
+  console.log(urlDatabase);
   res.redirect("/urls");
 });
 
@@ -132,7 +145,6 @@ app.get("/u/:shortURL", (req, res) => {
 
 // Renders Short URLs: page
 app.get("/urls/:id", (req, res) => {
-
   let templateVars = {
     shortURL: req.params.id,
     longURL: urlDatabase[req.params.id],
@@ -215,6 +227,7 @@ app.post("/register", (req, res) => {
       return;
     }
   }
+
 // This appends the global object users with a newUser
   users[newID] = {
     id: newID,
@@ -234,5 +247,3 @@ app.post("/register", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
-
-
