@@ -1,9 +1,11 @@
 
+const PORT         = 8080; // default port 8000
 const express      = require("express"); // this imports the express module
 const app          = express();
-const PORT         = 8080; // default port 8000
 const bodyParser   = require("body-parser");
-const cookieParser = require('cookie-parser')
+const cookieParser = require('cookie-parser');
+const bcrypt       = require('bcrypt');
+
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieParser());
 app.set("view engine", "ejs"); // this tells the Express app to use EJS ad its templating engine
@@ -14,19 +16,20 @@ const users = {
   "userRandomID": {
     id: "userRandomID",
     email: "user@example.com",
-    password: "purple-monkey-dinosaur"
+    password: bcrypt.hashSync("purple-monkey-dinosaur", 10)
   },
   "user2RandomID": {
     id: "user2RandomID",
     email: "user2@example.com",
-    password: "dishwasher-funk"
+    password: bcrypt.hashSync("dishwasher-funk", 10)
   },
   "321": {
     id: "321",
     email: "nick@gmail.com",
-    password: "123"
+    password: bcrypt.hashSync("123", 10)
   }
 }
+
 
 
 // we use this database to keep track of all the URLs  and their shortened forms
@@ -50,6 +53,7 @@ function getsUserUrls(id){
 
   let newArray = [];
   let userURLs = {};
+
   for (let keys in urlDatabase) {
     if (id === urlDatabase[keys].userID) {
         userURLs[keys] = urlDatabase[keys].longURL;
@@ -79,11 +83,12 @@ app.get("/urls", (req, res) => {
   let authenticatedUser;
   if(req.cookies["user_id"]){
     authenticatedUser = getsUserUrls(users[req.cookies["user_id"]].id);
-     console.log("URLS for that user ",authenticatedUser);
+
     let templateVars = {
       urls: authenticatedUser,
       user_id: users[req.cookies["user_id"]]
     }
+
     res.render("urls_index", templateVars);
   } else {
     res.redirect('/login');
@@ -120,16 +125,15 @@ app.get("/urls/new", (req, res) => {
 app.post("/urls", (req, res) => {
 //let myIDS = users[req.cookies["user_id"]];
 
-
   let longURL  = req.body.longURL;
   let shortUrl = generateRandomString();
+
   urlDatabase[shortUrl] = {
     shortURL : shortUrl,
     longURL : longURL,
     userID : users[req.cookies["user_id"]].id
   };
-  console.log("After creating new URL");
-  console.log(urlDatabase);
+
   res.redirect("/urls");
 });
 
@@ -169,7 +173,7 @@ app.get("/login", (req, res) => {
 //Function to check if user email and password matches
 function authenticateUser(email, password){
   for (var userID in users) {
-    if(users[userID].email === email && users[userID].password === password){
+    if(users[userID].email === email && bcrypt.compareSync(password, users[userID].password)){
       return users[userID];
     }
   }
@@ -210,9 +214,10 @@ app.get("/register", (req, res) => {
 
 app.post("/register", (req, res) => {
 
-  let newID       = generateRandomString();
-  let newEmail    = req.body.email;
-  let newPassword = req.body.password;
+  let newID          = generateRandomString();
+  let newEmail       = req.body.email;
+  let newPassword    = req.body.password;
+  let hashedPassword = bcrypt.hashSync(newPassword, 10);
 
 // Sends error for unfilled email/password fields
   if (!newEmail || !newPassword) {
@@ -232,13 +237,11 @@ app.post("/register", (req, res) => {
   users[newID] = {
     id: newID,
     email: newEmail,
-    password: newPassword,
+    password: hashedPassword,
   };
-
   res.cookie("user_id", newID);
   res.redirect("/urls");
 });
-
 
 
 
