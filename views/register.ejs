@@ -2,19 +2,17 @@
 <html>
   <% include ./partials/_head %>
 
-<body  style="font-size:20px; padding:50px;">
+  <body  style="font-size:20px; padding:50px;">
+    <a href="/login"> Login </a>
+    <form method="POST" action="/register" style="margin:150px;">
+      <h3>wanna register, eh?<h3>
+      </br>
+      </br>
+      E-mail: <input type="email" name="email">
+      Password: <input type="password" name="password">
+      <button type="submit"> GIVE ME YOUR INFORMATIONS </button>
+    </form>
 
-
-
-  <form method="POST" action="/register" style="margin:150px;">
-    <h3>wanna register, eh?<h3>
-    </br>
-    </br>
-    E-mail: <input type="email" name="email">
-    Password: <input type="password" name="password">
-    <button type="submit"> GIVE ME YOUR INFORMATIONS </button>
-  </form>
-</body>
-
+  </body>
 </html>
 

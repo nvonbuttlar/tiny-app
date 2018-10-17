@@ -4,18 +4,17 @@
 
   <body  style="font-size:20px; padding:50px;">
     <% include ./partials/_header %>
-  <ul>
-    <% for (var shortURL in urls) { %>
-    <li><%= shortURL %> - <%= urls[shortURL] %> </li>
-    <form method="POST" action="/urls/<%=shortURL%>/delete">
+    <ul>
+      <% for (var shortURL in urls) { %>
+      <li><%= shortURL %> - <%= urls[shortURL] %> </li>
+      <form method="POST" action="/urls/<%=shortURL%>/delete">
       <button><a href="/urls/<%=shortURL%>">Edit</a></button>
       <button type="submit"> Delete </button>
-    </form>
-    <% } %>
-  </ul>
+      </form>
+      <% } %>
+    </ul>
 
+    <a href="/urls/new"> Add a new URL </a>
 
-  <a href="/urls/new"> Add a new URL </a>
-
-</body>
+  </body>
 </html>
